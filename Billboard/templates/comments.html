@@ -1,0 +1,33 @@
+{% extends 'default.html' %}
+
+{% block title %}
+Comment
+{% endblock title %}
+
+{% block content %}
+    <h1>Все отклики</h1>
+    <form action="" method="get">
+       {{ filterset.form.as_p }}
+       <input type="submit" value="Найти" />
+    </form>
+<hr>
+{% if comments %}
+       <table class="table table-bordered">
+           <tr>
+               <td>Текст</td>
+               <td>Дата создания</td>
+               <td>Автор</td>
+           </tr>
+           {% for r in comments %}
+           <tr>
+               <td>{{ r.text_comment }}</a></td>
+               <td>{{ r.date_in|date:'H:m d M Y' }}</td>
+               <td>{{ r.author }}</td>
+           </tr>
+           {% endfor %}
+
+       </table>
+   {% else %}
+       <h2>Откликов нет!</h2>
+   {% endif %}
+{% endblock content %}

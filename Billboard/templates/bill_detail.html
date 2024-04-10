@@ -1,0 +1,69 @@
+{% extends 'default.html' %}
+
+<html>
+<head>
+<title>{% block title %}Мои Объявления{% endblock title %}</title>
+</head>
+<body>
+{% block content %}
+    <h2 style="text-align: center;">Мои Объявления</h2>
+    <hr>
+        {% if bills %}
+        <table class="table table-bordered">
+            <tr>
+                <td>Заголовок</td>
+                <td>Текст</td>
+                <td>Категория</td>
+                <td>Дата создания</td>
+                <td>Автор</td>
+            </tr>
+            {% for bill in bills %}
+            <tr>
+                <td><a href="{% url 'bill_user' bill.id %}">{{ bill.title }}</a></td>
+                <td>{{ bill.text|truncatechars:20|safe }}</td>
+                <td>{{ bill.category }}</td>
+                <td>{{ bill.bill_time|date:'H:m d M Y' }}</td>
+                <td>{{ bill.author }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <h2>У вас нет объявлений, Вы можете добавить новое</h2>
+        {% endif %}
+    <br>
+    <a href="{% url 'bill_edit' %}">Добавить объявление</a>
+{% endblock content %}
+</body>
+</html>
+
+
+{% block content %}
+
+    <div style="text-align: center;">
+        <h2>{{ post.title }}</h2>
+        <hr>
+    </div>
+
+
+    <div style="text-align: left;">
+        <p>{{ val.post.text|safe }}</p>
+    </div>
+
+        {% if request.user.author == post.author%}
+            <a class="btn btn-warning" href="{% url 'post_update' post.id %}" role="button">Редактировать</a>
+            <a class="btn btn-danger" href="{% url 'post_delete' post.id %}" role="button">Удалить</a>
+        {% else %}
+           <span style="color: gray;">Кнопок редакции поста нет ты не автор поста.</span>
+            <br>
+           <a class="btn btn-primary" href="{% url 'response_create' post.id %}" role="button">Оставить отклик</a>
+
+        {% endif %}
+    <hr>
+    <h5>
+        <i>
+            {{ post.datetime_post|date:'d M. Y h:m:s' }}
+            <span style="color: gray;">(автор: {{post.author}})</span>
+        </i>
+    </h5>
+
+{% endblock content %}
