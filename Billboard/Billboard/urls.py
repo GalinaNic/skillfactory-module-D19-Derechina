@@ -21,13 +21,13 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
+    path('', include('bills.urls')),
     path('admin/', admin.site.urls),
     path('pages/', include('django.contrib.flatpages.urls')),
-    path('bills/', include('bills.urls')),
     path('accounts/', include('allauth.urls')),
-    path('sign/', include('sign.urls')),
+    #path('sign/', include('sign.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
-    path('', include('protect.urls')),
+    #path('', include('protect.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

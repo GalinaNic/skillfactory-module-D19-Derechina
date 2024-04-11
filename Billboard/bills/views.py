@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from .models import Bill, Comment, Category
@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import User
+from .tasks import respond_send_email, respond_accept_send_email
+from protect.views import BillFilter
 
 
 class BillList(ListView):
@@ -26,12 +28,19 @@ class BillDetail(LoginRequiredMixin, DetailView):
     template_name = 'bill_detail.html'
     context_object_name = 'bill_detail'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    #def get_context_data(self, **kwargs):
+        #context = super().get_context_data(**kwargs)
         #comments = Comment.objects.filter(comment=True, comment_bill_id=self.kwargs['pk']).order_by('date_in')
         #context['comment_bill'] = comments
-        return context
+        #return context
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if Comment.objects.filter(author_id=self.request.user.id).filter(comment_bill_id=self.kwargs.get('pk')):
+            context['respond'] = "Откликнулся"
+        elif self.request.user == Bill.objects.get(pk=self.kwargs.get('pk')).author:
+            context['respond'] = "Мое_объявление"
+        return context
 
 class BillCreate(LoginRequiredMixin, CreateView):
     form_class = BillForm
@@ -44,19 +53,22 @@ class BillCreate(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         return context
 
-    def form_valid(self, form):
-        bill = form.save(commit=False)
-        bill.author = User.objects.get(id=self.request.user.id)
-        bill.save()
-        return redirect(f'/bills/{bill.id}')
-
     #def form_valid(self, form):
         #bill = form.save(commit=False)
-        #form.instance.author = self.request.user
+        #bill.author = User.objects.get(id=self.request.user.id)
         #bill.save()
-        #return super().form_valid(form)
+        #return redirect(f'/bills/{bill.id}')
 
+    #def dispatch(self, request, *args, **kwargs):
+        #if not self.request.user.has_perm('bills.add_bill'):
+            #return HttpResponseRedirect(reverse('account_profile'))
+        #return super().dispatch(request, *args, **kwargs)
 
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.author = User.objects.get(id=self.request.user.id)
+        post.save()
+        return redirect(f'/bill/{post.id}')
     #def add_bill(request):
         #if request.method == 'POST':
             #form = BillForm(request.POST)
@@ -73,19 +85,43 @@ class BillUpdate(LoginRequiredMixin, UpdateView):
     form_class = BillForm
     model = Bill
     template_name = 'bill_edit.html'
+    success_url = '/create/'
+
+    #def get_object(self, **kwargs):
+        #my_id = self.kwargs.get('pk')
+        #return Bill.objects.get(pk=my_id)
+
+    #def get_context_data(self, **kwargs):
+        #context = super().get_context_data(**kwargs)
+        #return context
+
+    def dispatch(self, request, *args, **kwargs):
+        author = Bill.objects.get(pk=self.kwargs.get('pk')).author.username
+        if self.request.user.username == 'admin' or self.request.user.username == author:
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            return HttpResponse("Редактировать объявление может только его автор")
 
     def get_object(self, **kwargs):
-        my_id = self.kwargs.get('pk')
-        return Bill.objects.get(pk=my_id)
+        id = self.kwargs.get('pk')
+        return Bill.objects.get(pk=id)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+    def form_valid(self, form):
+        form.save()
+        return HttpResponseRedirect('/bill/' + str(self.kwargs.get('pk')))
+
 
 class BillDelete(LoginRequiredMixin, DeleteView):
     model = Bill
     template_name = 'bill_delete.html'
     success_url = reverse_lazy('bill_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        author = Bill.objects.get(pk=self.kwargs.get('pk')).author.username
+        if self.request.user.username == 'admin' or self.request.user.username == author:
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            return HttpResponse("Удалить объявление может только его автор")
 
 
 class CommentList(ListView):
@@ -157,6 +193,24 @@ class CategoryList(BillList):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
         return context
+
+
+class Respond(LoginRequiredMixin, CreateView):
+    model = Comment
+    template_name = 'respond.html'
+    form_class = CommentForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+    def form_valid(self, form):
+        respond = form.save(commit=False)
+        respond.author = User.objects.get(id=self.request.user.id)
+        respond.bill = Bill.objects.get(id=self.kwargs.get('pk'))
+        respond.save()
+        respond_send_email.delay(respond_id=respond.id)
+        return redirect(f'/bill/{self.kwargs.get("pk")}')
 
 
 class ConfirmUser(UpdateView):

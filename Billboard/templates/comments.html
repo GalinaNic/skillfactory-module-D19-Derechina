@@ -1,33 +1,79 @@
 {% extends 'default.html' %}
-
-{% block title %}
-Comment
-{% endblock title %}
+{% load bootstrap4 %}
+{% block title %}Comment{% endblock title %}
 
 {% block content %}
-    <h1>Все отклики</h1>
-    <form action="" method="get">
-       {{ filterset.form.as_p }}
-       <input type="submit" value="Найти" />
-    </form>
-<hr>
-{% if comments %}
-       <table class="table table-bordered">
-           <tr>
-               <td>Текст</td>
-               <td>Дата создания</td>
-               <td>Автор</td>
-           </tr>
-           {% for r in comments %}
-           <tr>
-               <td>{{ r.text_comment }}</a></td>
-               <td>{{ r.date_in|date:'H:m d M Y' }}</td>
-               <td>{{ r.author }}</td>
-           </tr>
-           {% endfor %}
-
-       </table>
-   {% else %}
-       <h2>Откликов нет!</h2>
-   {% endif %}
+    <br>
+    <h3>Фильтр откликов на мои объявления:</h3><br>
+	<form method="POST">
+		{% csrf_token %}
+        {{ form }}
+		<input class="btn btn-secondary" type="submit" value="Показать">
+	</form><br>
+    {% if title %}
+        <h3>Oтклики на мое объявление</h3>
+        <a href="/bills/{{ comment_bill_id }}" style="font-size: 20px;"><b>{{ title }}:</b></a><br>
+        {% if filter_comment %}
+            {% for comment in filter_comment %}
+                <a><b>Отклик: </b></a>{{ comment.text_comment }}<br>
+                <span style="font-size: 12px;"><b>Автор отклика: {{ comment.author.username }} |
+                    дата публикации отклика: {{ comment.date_in|date:'d.M.Y' }} г.</b></span><br>
+                {% if comment.comment == False %}
+                    <a href="/comments/{{ response.id }}/accept/" style="font-size: 12px; color:green"><b>принять</b></a>
+                    <a>&nbsp;&nbsp;&nbsp;</a>
+                    <a href="/comments/{{ response.id }}/delete/" style="font-size: 12px; color:red"><b>удалить</b></a>
+                {% else %}
+                    <a style="font-size: 14px; color:green"><b>отклик принят</b></a>
+                {% endif %}
+                <br><br>
+            {% endfor %}
+        {% else %}
+            <br>
+            <h5>Откликов нет!</h5>
+        {% endif %}
+    {% else %}
+        <h3>Oтклики на все мои объявления:</h3>
+        {% if filter_comment %}
+            {% for comment in filter_comment %}
+                <a><b>Объявление:</b></a>
+                <a href="/bill/{{ comment.bill_id }}" style="font-size: 20px;"><b>{{ comment.comment_bill.title }}</b></a><br>
+                <span style="font-size: 12px;"><b>Дата публикации объявления: {{ comment.comment_bill.date_in|date:'d.M.Y' }} г.</b>
+                </span><br>
+                <a><b>Отклик: </b></a>{{ comment.text }}<br>
+                <span style="font-size: 12px;"><b>Автор отклика: {{ comment.author.username }} |
+                    дата публикации отклика: {{ comment.date_in|date:'d.M.Y' }} г.</b></span><br>
+                {% if comment.comment == False %}
+                    <a href="/comments/{{ comment.id }}/accept/" style="font-size: 12px; color:green"><b>принять</b></a>
+                    <a>&nbsp;&nbsp;&nbsp;</a>
+                    <a href="/comments/{{ comment.id }}delete/" style="font-size: 12px; color:red"><b>удалить</b></a>
+                {% else %}
+                    <a style="font-size: 14px; color:green"><b>отклик принят</b></a>
+                {% endif %}
+                <br><br>
+            {% endfor %}
+        {% else %}
+            <h5>Откликов нет!</h5>
+        {% endif %}
+    {% endif %}
+    <br><br>
+    <h3>Мои отклики на объявления:</h3>
+    {% if mycomments %}
+        {% for comment in mycomments %}
+            <a><b>Объявление:</b></a>
+            <a href="/comments/{{ comment.comment_bill_id }}" style="font-size: 20px;"><b>{{ comment.comment_bill.title }}</b></a><br>
+            <span style="font-size: 12px;"><b>Автор объявления:  {{ comment.comment_bill.author.username }} |
+                дата публикации объявления: {{ comment.comment_bill.date_in|date:'d.M.Y' }} г.</b></span><br>
+            <a><b>Мой отклик:</b></a>
+            {{ comment.text_comment }}<br>
+            <span style="font-size: 12px;"><b>Дата публикации отклика: {{ comment.date_in|date:'d.M.Y' }} г.</b></span><br>
+            {% if comment.comment == True %}
+                <a style="font-size: 14px; color:green"><b>Автор объявления принял отклик!</b></a>
+            {% else %}
+                <a style="font-size: 14px; color:red"><b>Автор объявления пока не принял отклик!</b></a>
+            {% endif %}
+        <br><br>
+        {% endfor %}
+    {% else %}
+        <h5>Откликов нет!</h5>
+    {% endif %}
 {% endblock content %}

@@ -18,7 +18,7 @@ class BillFilter(FilterSet):
 
     def __init__(self, *args, **kwargs):
         super(BillFilter, self).__init__(*args, **kwargs)
-        self.filters['comment_bill'].queryset = Bill.objects.filter(author__user_id=kwargs['request'])
+        self.filters['comment_bill'].queryset = Bill.objects.filter(author__id=kwargs['request'])
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -26,6 +26,6 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        queryset = Comment.objects.filter(comment_bill__author__user_id=self.request.user.id)
-        context['filterset'] = BillFilter(self.request.user.id)
+        queryset = Comment.objects.filter(comment_bill__author__id=self.request.user.id)
+        context['filterset'] = BillFilter(self.request.GET, request=self.request.user.id)
         return context
