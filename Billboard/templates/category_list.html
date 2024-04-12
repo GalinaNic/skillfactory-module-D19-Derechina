@@ -15,7 +15,7 @@
     </form>
 
 
-{% if category_bills_list %}
+{% if bill_cat_list %}
 
 <table width="100%" style="margin-top:35px">
     <tr>
@@ -24,11 +24,11 @@
         <td><u>Содержание</u></td>
         <td><u>Дата публикации</u></td>
     </tr>
-    {% for bill in category_bills_list %}
+    {% for bill in bill_cat_list %}
     <tr>
         <td>
             {% for category in bill.category.all %}
-                <a href="{% url 'category_list' category.id %}">{{ category }}</a>
+                <a href="{% url 'bill_cat_list' category.id %}">{{ category }}</a>
             {% endfor %}
         </td>
         <td>{{ bill.title }}</td>

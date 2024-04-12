@@ -7,7 +7,7 @@
     {% csrf_token %}
     <p>Хотите удалить объявление "{{ object.title }}"?</p>
     <input type="submit" value="Удалить" />
-    <a style="text-decoration: none" href="/bills/{{ bill.pk }}">
+    <a style="text-decoration: none" href="/bill/{{ bill.pk }}">
         <input class="btn btn-light btn-outline-info" type="button" value="Отмена" /></a>
 </form>
 {% endblock content %}

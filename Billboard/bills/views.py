@@ -9,13 +9,13 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import User
 from .tasks import respond_send_email, respond_accept_send_email
-from protect.views import BillFilter
+from .filters import BillFilter
 
 
 class BillList(ListView):
     model = Bill
     template_name = 'bill_list.html'
-    context_object_name = 'bills'
+    context_object_name = 'bill'
     ordering = '-bill_time'
 
     def get_context_data(self, **kwargs):
@@ -30,23 +30,25 @@ class BillDetail(LoginRequiredMixin, DetailView):
 
     #def get_context_data(self, **kwargs):
         #context = super().get_context_data(**kwargs)
-        #comments = Comment.objects.filter(comment=True, comment_bill_id=self.kwargs['pk']).order_by('date_in')
-        #context['comment_bill'] = comments
+        #if Comment.objects.filter(author_id=self.request.user.id).filter(comment_bill_id=self.kwargs.get('pk')):
+            #context['respond'] = "Откликнулся"
+        #elif self.request.user == Bill.objects.get(pk=self.kwargs.get('pk')).author:
+            #context['respond'] = "Мое объявление"
         #return context
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if Comment.objects.filter(author_id=self.request.user.id).filter(comment_bill_id=self.kwargs.get('pk')):
-            context['respond'] = "Откликнулся"
-        elif self.request.user == Bill.objects.get(pk=self.kwargs.get('pk')).author:
-            context['respond'] = "Мое_объявление"
+        bill_author = Bill.objects.get(id=self.kwargs['pk']).author
+        context['is_author'] = self.request.user == bill_author
+        responds_authors = Comment.objects.filter(comment_bill=self.kwargs['pk']).values('author')
+        context['responded'] = {'author': self.request.user.id} in responds_authors
         return context
 
 class BillCreate(LoginRequiredMixin, CreateView):
     form_class = BillForm
     model = Bill
     template_name = 'bill_edit.html'
-    context_object_name = 'bill'
+    context_object_name = 'bill_create'
     success_url = reverse_lazy('bill_list')
 
     def get_context_data(self, **kwargs):
@@ -130,14 +132,13 @@ class CommentList(ListView):
     ordering = '-date_in'
     context_object_name = 'comments'
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        self.filterset = BillFilter(self.request.GET, queryset)
-        return self.filterset.qs
+    #def get_queryset(self):
+        #queryset = super().get_queryset()
+        #self.filterset = BillFilter(self.request.GET, queryset)
+        #return self.filterset.qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['filterset'] = self.filterset
         return context
 
 
@@ -179,20 +180,20 @@ class CommentDelete(LoginRequiredMixin, DeleteView):
         return Comment.objects.get(pk=my_id)
 
 
-class CategoryList(BillList):
-    model = Bill
-    template_name = 'category_list.html'
-    context_object_name = 'category_bills_list'
+#class CategoryList(BillList):
+    #model = Bill
+    #template_name = 'category_list.html'
+    #context_object_name = 'bill_cat_list'
 
-    def get_queryset(self):
-        self.category = get_object_or_404(Category, id=self.kwargs['pk'])
-        queryset = Bill.objects.filter(category=self.category).order_by('-bill_time')
-        return queryset
+    #def get_queryset(self):
+        #self.category = get_object_or_404(Category, id=self.kwargs['pk'])
+        #queryset = Bill.objects.filter(category=self.category).order_by('-bill_time')
+        #return queryset
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['category'] = self.category
-        return context
+    #def get_context_data(self, **kwargs):
+        #context = super().get_context_data(**kwargs)
+        #context['category'] = self.category
+        #return context
 
 
 class Respond(LoginRequiredMixin, CreateView):
@@ -210,7 +211,7 @@ class Respond(LoginRequiredMixin, CreateView):
         respond.bill = Bill.objects.get(id=self.kwargs.get('pk'))
         respond.save()
         respond_send_email.delay(respond_id=respond.id)
-        return redirect(f'/bill/{self.kwargs.get("pk")}')
+        return redirect(f'/bill{self.kwargs.get("pk")}')
 
 
 class ConfirmUser(UpdateView):
