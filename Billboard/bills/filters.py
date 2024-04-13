@@ -1,7 +1,3 @@
-from django.views import View
-from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from .models import Comment, Bill
 from django_filters import FilterSet, ModelChoiceFilter
 

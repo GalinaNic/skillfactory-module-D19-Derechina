@@ -10,16 +10,6 @@ class MyView(PermissionRequiredMixin, View):
     permission_required = ('<app>.<action>_<model>',
                            '<app>.<action>_<model>')
 
-#class BillFilter(FilterSet):
-
-    #class Meta:
-        #model = Comment
-        #fields = ['comment_bill']
-
-    #def __init__(self, *args, **kwargs):
-        #super(BillFilter, self).__init__(*args, **kwargs)
-        #self.filters['comment_bill'].queryset = Bill.objects.filter(author__id=kwargs['request'])
-
 
 class IndexView(LoginRequiredMixin, TemplateView):
     template_name = 'protect/index.html'
