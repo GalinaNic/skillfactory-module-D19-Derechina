@@ -70,17 +70,14 @@ class Comment(models.Model):
     date_in = models.DateTimeField(auto_now_add=True)
     comment = models.BooleanField(default=False)
 
-    def preview(self):
-        return f"{self.text_comment:124]}..."
-
-    #def __str__(self):
-        #return self.text_comment
+    #def preview(self):
+        #return f"{self.text_comment:124]}..."
 
     def get_absolute_url(self):
         return reverse('comments', args=[str(self.comment_bill.id)])
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+    #def save(self, *args, **kwargs):
+        #super().save(*args, **kwargs)
 
 
 class OneTimeCode(models.Model):

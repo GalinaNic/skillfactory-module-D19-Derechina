@@ -163,11 +163,11 @@ class Respond(LoginRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
-        respond = form.save(commit=False)
-        respond.author = User.objects.get(id=self.request.user.id)
-        respond.bill = Bill.objects.get(id=self.kwargs.get('pk'))
-        respond.save()
-        comment_send_email.delay(respond_id=respond.id)
+        comment = form.save(commit=False)
+        comment.author = User.objects.get(id=self.request.user.id)
+        comment.comment_bill = Bill.objects.get(id=self.kwargs.get('pk'))
+        comment.save()
+        comment_send_email.delay(comment_bill_id=comment.id)
         return redirect(f'/bill{self.kwargs.get("pk")}')
 
 
