@@ -20,7 +20,7 @@
         <td>{{ bill.get_category_display }}</td>
         <td>{{ bill.bill_time|date:'d-M-Y f' }}</td>
     </tr>
-<table>
+
     <br><br>
 
     <a class="btn btn-secondary" href="{% url 'bill_list' %}" role="button">Закрыть</a>
@@ -31,7 +31,7 @@
     <br><br>
         {% if respond == "Откликнулся" %}
             <a style="color:red">Вы откликнулись на это объявление.</a><br>
-            <a href="{% url 'comments' %}">Посмотреть свои отклики</a>
+            <a href="{% url 'mycomments' %}">Посмотреть свои отклики</a>
         {% elif respond == "Мое объявление" %}
             <a style="color:red">Автор не может оставить отклик на свое объявление.</a><br>
         {% else %}
@@ -40,5 +40,5 @@
     {% endif %}
 <br><br>
 
-
+</table>
 {% endblock content %}

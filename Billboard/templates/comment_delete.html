@@ -7,7 +7,7 @@
     {% csrf_token %}
     <p>{Хотите удалить отклик "{{ comment }}" от пользователя "{{ comment.user }}"?</p>
     <input type="submit" value="Удалить" />
-    <a style="text-decoration: none" href="/comments/">
+    <a style="text-decoration: none" href="/mycomments/">
             <input class="btn btn-light btn-outline-info" type="button" value="Отмена" />
     </a>
 </form>

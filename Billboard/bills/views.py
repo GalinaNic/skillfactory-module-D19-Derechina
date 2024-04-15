@@ -93,9 +93,9 @@ class BillDelete(LoginRequiredMixin, DeleteView):
 
 class CommentList(ListView):
     model = Comment
-    template_name = 'comments.html'
+    template_name = 'mycomments.html'
     ordering = '-date_in'
-    context_object_name = 'comments'
+    context_object_name = 'mycomments'
 
     def get_queryset(self):
         queryset = Comment.objects.filter(comment_bill__author=self.request.user).order_by('-date_in')
@@ -108,29 +108,28 @@ class CommentList(ListView):
         return context
 
 
-class CommentCreate(LoginRequiredMixin, CreateView):
-    form_class = CommentForm
-    model = Comment
-    template_name = 'comment_edit.html'
-    context_object_name = 'comment'
-    success_url = reverse_lazy('comments')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['bill_detail'] = Bill.objects.get(pk=self.kwargs['pk']).title
-        return context
-
-    def form_valid(self, form):
-        comment = form.save(commit=False)
-        comment.author = self.request.user
-        comment.comment_bill = Bill.objects.get(id=self.kwargs['pk'])
-        return super().form_valid(form)
-
+# class CommentCreate(LoginRequiredMixin, CreateView):
+#     form_class = CommentForm
+#     model = Comment
+#     template_name = 'respond.html'
+#
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['bill_detail'] = Bill.objects.get(pk=self.kwargs['pk']).title
+#         return context
+#
+#     def form_valid(self, form):
+#         comment = form.save(commit=False)
+#         comment.author = self.request.user
+#         comment.comment_bill = Bill.objects.get(id=self.kwargs['pk'])
+#         return super().form_valid(form)
+#
 
 class CommentDelete(LoginRequiredMixin, DeleteView):
     model = Comment
     template_name = 'comment_delete.html'
-    success_url = reverse_lazy('comments')
+    success_url = reverse_lazy('mycomments')
 
     def get_object(self, **kwargs):
         my_id = self.kwargs.get('pk')
@@ -163,12 +162,12 @@ class Respond(LoginRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
-        comment = form.save(commit=False)
-        comment.author = User.objects.get(id=self.request.user.id)
-        comment.comment_bill = Bill.objects.get(id=self.kwargs.get('pk'))
-        comment.save()
-        comment_send_email.delay(comment_bill_id=comment.id)
-        return redirect(f'/bill{self.kwargs.get("pk")}')
+        respond = form.save(commit=False)
+        respond.author = User.objects.get(id=self.request.user.id)
+        respond.comment_bill = Bill.objects.get(id=self.kwargs.get('pk'))
+        respond.save()
+        comment_send_email.delay(respond.id)
+        return redirect(f'/bill/{self.kwargs.get("pk")}/')
 
 
 class ConfirmUser(UpdateView):
@@ -192,7 +191,7 @@ def accept_comment(request, pk):
     comment.accepted = True
     comment.save()
     comment.send_accepted_email()
-    return HttpResponseRedirect(reverse('comments'))
+    return HttpResponseRedirect(reverse('mycomments'))
 
 
 @login_required

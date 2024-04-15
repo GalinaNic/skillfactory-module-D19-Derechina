@@ -74,7 +74,7 @@ class Comment(models.Model):
         #return f"{self.text_comment:124]}..."
 
     def get_absolute_url(self):
-        return reverse('comments', args=[str(self.comment_bill.id)])
+        return reverse('mycomments', args=[str(self.comment_bill.id)])
 
     #def save(self, *args, **kwargs):
         #super().save(*args, **kwargs)
