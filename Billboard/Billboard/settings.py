@@ -37,11 +37,11 @@ ACCOUNT_FORMS = {'signup': 'bills.forms.CommonSignupForm'}
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'bills.apps.BillsConfig',
     'django.contrib.sites',
     'django.contrib.flatpages',
     'fpages',
@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django_filters',
     'ckeditor',
     'ckeditor_uploader',
+
 ]
 
 SITE_ID = 1

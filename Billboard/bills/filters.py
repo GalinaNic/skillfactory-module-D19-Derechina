@@ -9,4 +9,4 @@ class BillFilter(FilterSet):
 
     def __init__(self, *args, **kwargs):
         super(BillFilter, self).__init__(*args, **kwargs)
-        self.filters['comment_bill'].queryset = Bill.objects.filter(author__id=kwargs['request'])
+        self.filters['comment_bill'].queryset = Bill.objects.filter(author_id=kwargs['request'])

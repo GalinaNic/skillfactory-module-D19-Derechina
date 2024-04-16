@@ -98,9 +98,16 @@ class CommentList(ListView):
     context_object_name = 'mycomments'
 
     def get_queryset(self):
-        queryset = Comment.objects.filter(comment_bill__author=self.request.user).order_by('-date_in')
+        user_id = self.request.user.id
+        queryset = Comment.objects.filter(comment_bill__author=user_id).order_by('-date_in')
         self.filterset = BillFilter(self.request.GET, queryset, request=self.request.user)
         return self.filterset.qs
+
+
+    # def get_queryset(self):
+    #     queryset = Comment.objects.filter(comment_bill__author=self.request.user).order_by('-date_in')
+    #     self.filterset = BillFilter(self.request.GET, queryset, request=self.request.user)
+    #     return self.filterset.qs
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
