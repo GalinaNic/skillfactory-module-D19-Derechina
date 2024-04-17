@@ -192,14 +192,23 @@ class ConfirmUser(UpdateView):
         return redirect('account_login')
 
 
-@login_required
-def accept_comment(request, pk):
-    comment = get_object_or_404(Comment, pk=pk)
-    comment.accepted = True
-    comment.save()
-    comment.send_accepted_email()
-    return HttpResponseRedirect(reverse('mycomments'))
+# @login_required
+# def accept_comment(request, pk):
+#     comment = Comment.objects.get(id=pk)
+#     comment.accepted = True
+#     comment.save()
+#     return HttpResponseRedirect(reverse('mycomments'))
 
+@login_required
+def accept_comment(request, **kwargs):
+    if request.user.is_authenticated:
+        comment = Comment.objects.get(id=kwargs.get('pk'))
+        comment.status = True
+        comment.save()
+        comment_accept_send_email.delay(comment_bill_id=comment.id)
+        return HttpResponseRedirect('/mycomments')
+    else:
+        return HttpResponseRedirect('/accounts/login')
 
 @login_required
 def subscribe(request, pk):
