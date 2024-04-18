@@ -12,12 +12,10 @@
 <table>
     <tr>
         <td>Автор</td>
-        <td>| Категория</td>
         <td>| Дата публикации</td>
     </tr>
     <tr>
         <td>{{ bill.author }}</td>
-        <td>{{ bill.get_category_display }}</td>
         <td>{{ bill.bill_time|date:'d-M-Y f' }}</td>
     </tr>
 

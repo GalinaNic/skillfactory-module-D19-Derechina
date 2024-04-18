@@ -100,7 +100,7 @@ class CommentList(ListView):
     def get_queryset(self):
         user_id = self.request.user.id
         queryset = Comment.objects.filter(comment_bill__author=user_id).order_by('-date_in')
-        self.filterset = BillFilter(self.request.GET, queryset, request=self.request.user)
+        self.filterset = BillFilter(self.request.GET, queryset, request=self.request.user.id)
         return self.filterset.qs
 
 
